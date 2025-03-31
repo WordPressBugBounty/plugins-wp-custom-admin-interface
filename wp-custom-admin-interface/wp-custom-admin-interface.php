@@ -4,7 +4,7 @@
 *		Plugin Name: WP Custom Admin Interface
 *		Plugin URI: https://www.northernbeacheswebsites.com.au
 *		Description: Customise the WordPress admin and login interfaces and customize the WordPress dashboard menu.  
-*		Version: 7.37
+*		Version: 7.38
 *		Author: Martin Gibson
 *		Developer: Northern Beaches Websites
 *		Developer URI:  https://www.northernbeacheswebsites.com.au
@@ -508,7 +508,10 @@ function wp_custom_admin_interface_remove_footer_admin () {
     $options = get_option('wp_custom_admin_interface_settings_GeneralSettings');
     
     if(isset($options['wp_custom_admin_interface_custom_footer']) && strlen($options['wp_custom_admin_interface_custom_footer'])>0){
-        return wp_custom_admin_interface_shortcode_replacer($options['wp_custom_admin_interface_custom_footer']); 
+
+        $sanitized_footer = sanitize_textarea_field($options['wp_custom_admin_interface_custom_footer']);
+
+        return wp_custom_admin_interface_shortcode_replacer($sanitized_footer); 
     }
 }
 add_filter('admin_footer_text', 'wp_custom_admin_interface_remove_footer_admin');
@@ -572,8 +575,11 @@ function wp_custom_admin_interface_login_background_color() {
     
 
     if(strlen($options['wp_custom_admin_interface_custom_logo']) > 0 && isset($options['wp_custom_admin_interface_custom_logo'])){
+
+        $sanitized_url = sanitize_url($options['wp_custom_admin_interface_custom_logo']);
+
         $colour_options .= "#login h1 a, .login h1 a {
-            background-image: url({$options['wp_custom_admin_interface_custom_logo']});
+            background-image: url({$sanitized_url});
             width:320px !important;
             background-size: contain !important;
             background-repeat: no-repeat;
@@ -985,6 +991,8 @@ function wp_custom_admin_interface_dashboard_widget() {
         } else {
             $widgetTitle = $options['wp_custom_admin_interface_custom_widget_title'];       
         }
+
+        $widgetTitle = sanitize_text_field($widgetTitle);
         
         wp_add_dashboard_widget(
             'custom_widget',         // Widget slug.
@@ -994,7 +1002,12 @@ function wp_custom_admin_interface_dashboard_widget() {
 
         function custom_widget_output() {
             $options = get_option( 'wp_custom_admin_interface_settings_CustomDashboardWidget' );
-            echo wp_custom_admin_interface_shortcode_replacer($options['wp_custom_admin_interface_custom_widget_content']); 
+
+            $sanitized_data = sanitize_textarea_field($options['wp_custom_admin_interface_custom_widget_content']);
+
+            $replace_shortcodes = wp_custom_admin_interface_shortcode_replacer($sanitized_data);
+
+            echo $replace_shortcodes; 
         }
     }
 }
@@ -1039,7 +1052,7 @@ function wp_custom_admin_interface_custom_favicon() {
     $options = get_option( 'wp_custom_admin_interface_settings_GeneralSettings' );
     
     if(isset($options['wp_custom_admin_interface_custom_favicon']) && strlen($options['wp_custom_admin_interface_custom_favicon'])>0){
-        echo '<link rel="shortcut icon" href="' . $options['wp_custom_admin_interface_custom_favicon'] . '" />';    
+        echo '<link rel="shortcut icon" href="' . sanitize_url($options['wp_custom_admin_interface_custom_favicon']) . '" />';    
     } else {
         
         return;
@@ -2194,7 +2207,7 @@ function wp_custom_admin_interface_login_url($url) {
         if(strlen($options['wp_custom_admin_interface_login_url'])<1){
             $loginUrl = '#';
         } else {
-            $loginUrl = $options['wp_custom_admin_interface_login_url']; 
+            $loginUrl = sanitize_url($options['wp_custom_admin_interface_login_url']); 
         }
         
         return $loginUrl;    
