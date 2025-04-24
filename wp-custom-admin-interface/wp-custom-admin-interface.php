@@ -4,7 +4,7 @@
 *		Plugin Name: WP Custom Admin Interface
 *		Plugin URI: https://www.northernbeacheswebsites.com.au
 *		Description: Customise the WordPress admin and login interfaces and customize the WordPress dashboard menu.  
-*		Version: 7.38
+*		Version: 7.39
 *		Author: Martin Gibson
 *		Developer: Northern Beaches Websites
 *		Developer URI:  https://www.northernbeacheswebsites.com.au
@@ -1003,7 +1003,52 @@ function wp_custom_admin_interface_dashboard_widget() {
         function custom_widget_output() {
             $options = get_option( 'wp_custom_admin_interface_settings_CustomDashboardWidget' );
 
-            $sanitized_data = sanitize_textarea_field($options['wp_custom_admin_interface_custom_widget_content']);
+            $allowed_tags = array(
+                'p' => array(),
+                'br' => array(),
+                'strong' => array(),
+                'b' => array(),
+                'em' => array(),
+                'i' => array(),
+                'u' => array(),
+                'a' => array(
+                    'href' => true,
+                    'title' => true,
+                    'target' => true,
+                    'rel' => true,
+                ),
+                'iframe' => array(
+                    'src'             => true,
+                    'width'           => true,
+                    'height'          => true,
+                    'frameborder'     => true,
+                    'allowfullscreen' => true,
+                    'allow'           => true,
+                    'loading'         => true,
+                ),
+                'ul' => array(),
+                'ol' => array(),
+                'li' => array(),
+                'span' => array(
+                    'style' => true,
+                    'class' => true,
+                ),
+                'div' => array(
+                    'class' => true,
+                    'style' => true,
+                ),
+                'img' => array(
+                    'src' => true,
+                    'alt' => true,
+                    'width' => true,
+                    'height' => true,
+                    'class' => true,
+                ),
+            );
+            
+            // $sanitized_data = sanitize_textarea_field($options['wp_custom_admin_interface_custom_widget_content']);
+            $sanitized_data = wp_kses($options['wp_custom_admin_interface_custom_widget_content'], $allowed_tags);
+
 
             $replace_shortcodes = wp_custom_admin_interface_shortcode_replacer($sanitized_data);
 
