@@ -4,7 +4,7 @@
 *		Plugin Name: WP Custom Admin Interface
 *		Plugin URI: https://www.northernbeacheswebsites.com.au
 *		Description: Customise the WordPress admin and login interfaces and customize the WordPress dashboard menu.  
-*		Version: 7.39
+*		Version: 7.42
 *		Author: Martin Gibson
 *		Developer: Northern Beaches Websites
 *		Developer URI:  https://www.northernbeacheswebsites.com.au
@@ -2421,7 +2421,7 @@ function wp_custom_admin_interface_custom_admin_notice() {
                         $dismissableClass = '';     
                     }
 
-                    echo '<div id="custom-admin-notice" data="'.$currentUserId.'" class="notice '.$options['wp_custom_admin_interface_notice_color'].' '.$dismissableClass.'">';
+                    echo '<div id="custom-admin-notice" data="'.$currentUserId.'" data-nonce="'.wp_create_nonce( 'wp_custom_admin_interface_notice' ).'" class="notice '.$options['wp_custom_admin_interface_notice_color'].' '.$dismissableClass.'">';
                     
                     echo wp_custom_admin_interface_shortcode_replacer($options['wp_custom_admin_interface_notice_message']);
                     
@@ -2446,14 +2446,23 @@ add_action( 'admin_notices', 'wp_custom_admin_interface_custom_admin_notice' );
 */
 function wp_custom_admin_interface_dismiss_admin_notice() {
     
-    //get user input
-    $userId = $_POST['userId']; 
-    
-    //create transient name - an stands for admin notice    
-    $transientName = 'an_dismiss_'.$userId;
-    
-    //create actual transient
-    set_transient($transientName,true,0);
+    //check nonce
+    if( wp_verify_nonce( $_POST['nonce'], 'wp_custom_admin_interface_notice' ) ){
+
+        //get user input
+        $userId = intval($_POST['userId']);
+        
+        $current_user_id = intval(get_current_user_id());
+
+        if($userId == $current_user_id){
+            //create transient name - an stands for admin notice    
+            $transientName = 'an_dismiss_'.$userId;
+            
+            //create actual transient
+            set_transient($transientName,true,0);
+        }
+        
+    }
         
     die();    
 }
@@ -2465,11 +2474,16 @@ add_action( 'wp_ajax_dismiss_message', 'wp_custom_admin_interface_dismiss_admin_
 * Function to clear transients related to the admin notice
 */
 function wp_custom_admin_interface_delete_dismiss_transients() {
-	global $wpdb; 
-    $sql = "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_an_dismiss_%'";
-    $wpdb->query($sql);
-    echo "success";    
+
+    if ( current_user_can( 'administrator' ) ) {
+
+        global $wpdb; 
+        $sql = "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_an_dismiss_%'";
+        $wpdb->query($sql);
+        echo "success";   
+    } 
     die();    
+
 }
 add_action( 'wp_ajax_delete_dismiss_transients', 'wp_custom_admin_interface_delete_dismiss_transients');
 
