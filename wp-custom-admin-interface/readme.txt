@@ -3,8 +3,8 @@ Contributors: northernbeacheswebsites
 Donate link: https://northernbeacheswebsites.com.au/product/donate-to-northern-beaches-websites/
 Tags: admin, interface, menu, menu editor, customize, toolbar, login, admin logo, admin login logo, change login logo, custom admin logo, custom code, maintenance, color scheme, admin notice, hide plugins, hide users, hide sidebars, hide meta, hide meta boxes
 Requires at least: 3.0.1
-Tested up to: 6.9
-Stable tag: 7.42
+Tested up to: 6.9.1
+Stable tag: 7.43
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,6 +115,9 @@ Please use the support forum to raise any issues or questions.
 
 
 == Changelog ==
+
+= 7.43 =
+* Minor security update
 
 = 7.42 =
 * Minor security update
@@ -418,6 +421,9 @@ Please use the support forum to raise any issues or questions.
 * Initial launch of the plugin
 
 == Upgrade Notice ==
+
+= 7.43 =
+* Minor security update
 
 = 7.42 =
 * Minor security update

@@ -4,7 +4,7 @@
 *		Plugin Name: WP Custom Admin Interface
 *		Plugin URI: https://www.northernbeacheswebsites.com.au
 *		Description: Customise the WordPress admin and login interfaces and customize the WordPress dashboard menu.  
-*		Version: 7.42
+*		Version: 7.43
 *		Author: Martin Gibson
 *		Developer: Northern Beaches Websites
 *		Developer URI:  https://www.northernbeacheswebsites.com.au
@@ -1877,8 +1877,7 @@ function wp_custom_admin_interface_exception_cases_render_assist($existingExcept
             $userDisplayName = $userFirstName.' '.$userLastName;
         }
 
-
-        $outputOfUsersAndRolesSelection .= 'User: '.$userDisplayName.'('.$userId.'),';
+        $outputOfUsersAndRolesSelection .= 'User: '.esc_html($userDisplayName).'('.intval($userId).'),';
          
     }
     

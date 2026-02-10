@@ -1979,7 +1979,7 @@ function wp_custom_admin_interface_hide_these_users_render() {
                 
                 
                 
-                echo '<li class="user-item"><div><i class="fa fa-eye-slash remove-user-item" title="Hide user" aria-hidden="true"></i><span id="user-name" style="font-weight: bold;" data="'.$userId.'">'.$userDisplayName.' <em style="font-weight: normal;">('.$userRole.')</em></span></div></li>';  
+                echo '<li class="user-item"><div><i class="fa fa-eye-slash remove-user-item" title="Hide user" aria-hidden="true"></i><span id="user-name" style="font-weight: bold;" data="'.esc_attr($userId).'">'.esc_html($userDisplayName).' <em style="font-weight: normal;">('.esc_html($userRole).')</em></span></div></li>';  
 
             }
             //end container
