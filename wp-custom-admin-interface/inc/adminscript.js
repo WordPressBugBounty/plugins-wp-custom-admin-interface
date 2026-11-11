@@ -129,52 +129,44 @@ jQuery(document).ready(function ($) {
 
             var selectedOption = selected;
 
-            var allRolesAndUsers = $('#combinedListOfUsersAndRoles').attr('data');
+            //read the list as JSON and build the DOM with text nodes only - never parse user data as HTML
+            var allRolesAndUsers = [];
 
-            var allRolesAndUsersRemoveLastComma = allRolesAndUsers.slice(0,-1);
+            try {
+                allRolesAndUsers = JSON.parse($('#combinedListOfUsersAndRoles').attr('data-items') || '[]');
+            } catch (err) {
+                allRolesAndUsers = [];
+            }
 
-            var allRolesAndUsersArray = allRolesAndUsersRemoveLastComma.split(',');
+            if (!Array.isArray(allRolesAndUsers)) {
+                allRolesAndUsers = [];
+            }
 
-            var output = '<div class="exception-case"><select>';
+            var wrapper = $('<div/>', { 'class': 'exception-case' });
+            var select = $('<select/>');
 
-            for (key in allRolesAndUsersArray){
+            $.each(allRolesAndUsers, function(index, item){
 
-                var option = allRolesAndUsersArray[key];
-
-                if(option.indexOf('Role:') >= 0) {
-
-                    var optionValue = option.substr(6,option.length - 6);
-
-                    if(optionValue == selectedOption) {
-                        output += '<option selected="selected" value="'+optionValue+'">'+option+'</option>';    
-                    } else{
-                        output += '<option value="'+optionValue+'">'+option+'</option>';    
-                    }
-
-
-
-                } else {
-
-                    var optionFirstBracket = option.indexOf('(');
-                    var optionLastBracket = option.indexOf(')');
-                    var optionValue = option.substr(optionFirstBracket+1,optionLastBracket-optionFirstBracket-1);
-
-                    var optionDisplay = option.substr(0,optionFirstBracket);
-
-                    if(optionValue == selectedOption) {
-                        output += '<option selected="selected" value="'+optionValue+'">'+optionDisplay+'</option>';
-                    } else {
-                        output += '<option value="'+optionValue+'">'+optionDisplay+'</option>';    
-                    }
-
+                if (!item || typeof item !== 'object') {
+                    return;
                 }
 
-            } 
+                var optionValue = String(item.value);
+                var option = $('<option/>').val(optionValue).text(String(item.label));
 
-            output += '</select><i class="fa fa-plus add-exception-case" aria-hidden="true"></i><i class="fa fa-minus remove-exception-case" aria-hidden="true"></i></div>';
-            
-            destination.find('#outputOfUsersAndRolesSelection').append(output);
+                if (optionValue == selectedOption) {
+                    option.prop('selected', true).attr('selected', 'selected');
+                }
 
+                select.append(option);
+
+            });
+
+            wrapper.append(select);
+            wrapper.append($('<i/>', { 'class': 'fa fa-plus add-exception-case', 'aria-hidden': 'true' }));
+            wrapper.append($('<i/>', { 'class': 'fa fa-minus remove-exception-case', 'aria-hidden': 'true' }));
+
+            destination.find('#outputOfUsersAndRolesSelection').append(wrapper);
 
         }
     

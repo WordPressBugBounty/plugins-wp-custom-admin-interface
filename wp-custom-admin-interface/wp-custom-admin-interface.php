@@ -4,7 +4,7 @@
 *		Plugin Name: WP Custom Admin Interface
 *		Plugin URI: https://www.northernbeacheswebsites.com.au
 *		Description: Customise the WordPress admin and login interfaces and customize the WordPress dashboard menu.  
-*		Version: 7.43
+*		Version: 7.44
 *		Author: Martin Gibson
 *		Developer: Northern Beaches Websites
 *		Developer URI:  https://www.northernbeacheswebsites.com.au
@@ -1721,7 +1721,7 @@ add_filter('query_vars', 'wp_custom_admin_interface_query_vars');
 */
 function wp_custom_admin_interface_delete_transients() {
 
-    if( current_user_can( 'manage_options') ){
+    if( current_user_can( 'manage_options') && array_key_exists('noonce', $_POST) ){
 
         $noonce = sanitize_text_field( $_POST['noonce'] );
         $noonce_check = wp_verify_nonce( $noonce, 'delete_transients' );
@@ -1849,7 +1849,9 @@ function wp_custom_admin_interface_exception_cases_render_assist($existingExcept
     $html = '<tr valign="top"><td scope="row" colspan="2">';
     
     
-    $outputOfUsersAndRolesSelection = '';
+    //build a list of users and roles which is passed to the javascript as JSON
+    //values are treated as plain text on the client side and are never parsed as HTML
+    $outputOfUsersAndRolesSelection = array();
     
     //lets get the users
     global $wpdb;
@@ -1863,21 +1865,29 @@ function wp_custom_admin_interface_exception_cases_render_assist($existingExcept
     
     foreach($wp_custom_admin_interface_original_user_listing as $value){
                 
-        $userId = $value->ID;
+        $userId = intval($value->ID);
         $userInfo = get_userdata($userId);
 
-        $userFirstName = $userInfo->first_name;
-        $userLastName = $userInfo->last_name;
-        //we need to first unserialize the array, then get just the keys of the array and then implode it into a comma string
-        $userRole = implode(', ',$userInfo->roles);
-
-        if(strlen($userFirstName)<1 && strlen($userFirstName)<1) {
-            $userDisplayName = $userInfo->user_login;
-        } else {
-            $userDisplayName = $userFirstName.' '.$userLastName;
+        if(!$userInfo){
+            continue;
         }
 
-        $outputOfUsersAndRolesSelection .= 'User: '.esc_html($userDisplayName).'('.intval($userId).'),';
+        $userFirstName = (string) $userInfo->first_name;
+        $userLastName = (string) $userInfo->last_name;
+
+        if(strlen($userFirstName)<1 && strlen($userLastName)<1) {
+            $userDisplayName = $userInfo->user_login;
+        } else {
+            $userDisplayName = trim($userFirstName.' '.$userLastName);
+        }
+
+        //strip any markup and decode entities so the value is plain text; it is output as text on the client
+        $userDisplayName = wp_strip_all_tags( html_entity_decode( $userDisplayName, ENT_QUOTES, 'UTF-8' ) );
+
+        $outputOfUsersAndRolesSelection[] = array(
+            'value' => (string) $userId,
+            'label' => 'User: '.$userDisplayName,
+        );
          
     }
     
@@ -1885,11 +1895,15 @@ function wp_custom_admin_interface_exception_cases_render_assist($existingExcept
     //lets get the roles
     global $wp_roles;
     foreach ( $wp_roles->roles as $key=>$value ){
-        $outputOfUsersAndRolesSelection .= 'Role: '.$value['name'].',';    
+        $roleName = wp_strip_all_tags( html_entity_decode( (string) $value['name'], ENT_QUOTES, 'UTF-8' ) );
+        $outputOfUsersAndRolesSelection[] = array(
+            'value' => $roleName,
+            'label' => 'Role: '.$roleName,
+        );
     }
             
-    $html .= '<div id="combinedListOfUsersAndRoles" data="';        
-    $html .= $outputOfUsersAndRolesSelection;
+    $html .= '<div id="combinedListOfUsersAndRoles" data-items="';        
+    $html .= esc_attr( wp_json_encode( $outputOfUsersAndRolesSelection ) );
     $html .= '"></div><div id="outputOfUsersAndRolesSelection" data=""></div><input style="display:none;" class="wp_custom_admin_interface_settings_input saved_exception_cases" type="text" name="'.$optionName.'[';
 
     $html .= $existingExceptionCases;        
